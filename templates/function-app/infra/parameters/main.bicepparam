@@ -1,3 +1,78 @@
 using '../main.bicep'
 
-param test = 'kjhkdsf'
+// fill with company specific information
+var orgName = ''
+var environmentCode = ''  //? e.g. "dev" for Development
+var locationCode = ''     //? e.g. "aue" for australiaeast
+var instanceSuffix = ''
+
+// use these suffixes to maintain a standardised naming for Azure resources deployed by this template
+var resourceSuffix = (empty(instanceSuffix)) ? '${orgName}-${environmentCode}-${locationCode}' : '${orgName}-${environmentCode}-${locationCode}-${instanceSuffix}'
+var resourceSuffixNoHyphens = (empty(instanceSuffix)) ? '${orgName}${environmentCode}${locationCode}' : '${orgName}${environmentCode}${locationCode}${instanceSuffix}'
+
+
+//? ==============================================================================================
+//?                             App Service Plan Configuration
+//? ==============================================================================================
+param useExistingAppServicePlan = false
+
+// Only fill if provisioning a new App Service Plan (i.e. useExistingAppServicePlan = false)
+param newAppServicePlanName = null
+param skuName = 'FC1'
+param zoneRedundant = false
+
+// Only fill the following block if using an existing App Service Plan (i.e. useExistingAppServicePlan = true)
+param existingAppServicePlanName = null
+
+
+//? ==============================================================================================
+//?                               Function App Configuration
+//? ==============================================================================================
+param useVnetIntegration = false
+param functionAppOsType = 'Linux'
+param forceHttps = true
+
+param appSettings = {
+  minTlsVersion: '1.2'
+}
+
+
+//? ==============================================================================================
+//?                                  Network Configuration
+//?                     (only applies when useVnetIntegration setting = true)
+//? ==============================================================================================
+param useExistingVnet = false
+
+// Fill the below setting if using an existing vNet (i.e. useExistingVnet = true). The rest in this section can be ignored
+param existingVnetName = null
+
+// Fill the below if provisioning a new vNet (i.e. useExistingVnet = false)
+param newVnetName = null
+param newVnetSize = null
+param usePrivateEndpoints = true        //? NOTE: Be sure to also accordingly set the publicNetworkAccess setting on the Function App
+param privateEndpointsSubnetName = null
+param subnets = [
+  //? Copy the commented out block to configure and create subnets as necessary (some settings are opptional)
+  //! For use of an App Service Plan, a subnet delegated to "Microsoft.Web/serverfarms" is required
+  // {
+  //   name: 'snet-{purpose}-${resourceSuffix}' - required
+  //   addressPrefix: cidrSubnet(base, size, offset) - required
+  //   networkSecurityGroupResourceId: !empty(defaultSubnetNsgResourceId) ? defaultSubnetNsgResourceId : null
+  //   delegation: ''
+  // }
+]
+
+param useNetworkSecurityGroups = false
+
+// Only fill the below if using using NSGs (i.e. useNetworkSecurityGroups = true)
+param networkSecurityGroupConfigs = [
+  //? Copy the commented out block to configure and create subnets as necessary (some settings are opptional)
+  {
+    subnet: ''
+    networkSecurityGroup: {
+      name: ''
+    }
+  }
+]
+
+// Only fill the below if NOT using using NSGs (i.e. useNetworkSecurityGroups = false) 
