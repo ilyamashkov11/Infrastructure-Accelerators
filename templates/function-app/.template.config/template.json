@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Ilya Mashkov",
+    "name": "Function App Accelerator",
+    "classifications": ["Azure", "Function App"],
+    "identity": "IlyaMashkov.FunctionApp.Accelerator",
+    "shortName": "func-app",
+    "description": "",
+    "preferNameDirectory": true,
+    "sourceName": "MyFunctionAAppp",
+    "tags": {
+        "type": "project"
+    },
+    "symbols": {
+        "region": {
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "australiaeast",
+            "description": "Azure region to deploy to"
+        }
+    }
+}
