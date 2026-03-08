@@ -12,7 +12,7 @@ param existingAppServicePlanName string?
 
 @allowed(['FC1', 'B1'])
 @description('Name of the SKU for a new App Service Plan')
-param skuName string
+param skuName string?
 
 @description('Whether to appply zone redundancy to the Function Apps in this App Service Plan')
 param zoneRedundant bool
@@ -70,13 +70,20 @@ param networkSecurityGroupConfigs array?
 //? ==============================================================================================
 //?                                         Modules
 //? ==============================================================================================
+module Network 'network/main.bicep' = if (useVnetIntegration) {
+    name: 'network-main'
+    params: {
+        
+    }
+}
+
 //TODO: add existing app service plans
 
 module AppServicePlanLinux 'app-service-plans/asp-linux.bicep' = if (!useExistingAppServicePlan && functionAppOsType == 'Linux') {
     name: 'app-service-plan-linux-main'
     params: {
-        appServicePlanName: newAppServicePlanName
-        skuName: skuName
+        appServicePlanName: newAppServicePlanName!
+        skuName: skuName!
         virtualNetworkSubnetId: '' // TODO: allow for creation of vNets
         zoneRedundant: zoneRedundant
     }
@@ -85,8 +92,8 @@ module AppServicePlanLinux 'app-service-plans/asp-linux.bicep' = if (!useExistin
 module AppServicePlanWindows 'app-service-plans/asp-windows.bicep' = if (!useExistingAppServicePlan && functionAppOsType == 'Windows') {
     name: 'app-service-plan-windows-main'
     params: {
-        appServicePlanName: newAppServicePlanName
-        skuName: skuName
+        appServicePlanName: newAppServicePlanName!
+        skuName: skuName!
         virtualNetworkSubnetId: '' // TODO: allow for creation of vNets
         zoneRedundant: zoneRedundant
     }
