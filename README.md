@@ -1,0 +1,1 @@
+Accelerators for various Azure services, allowing for quick IaC set up and deployment
