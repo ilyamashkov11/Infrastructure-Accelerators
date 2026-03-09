@@ -1,4 +1,4 @@
-using '../main.bicep'
+using './main.bicep'
 
 // fill with company specific information
 var orgName = ''
@@ -59,13 +59,13 @@ param newVnetName = null
 param newVnetSize = null
 param usePrivateEndpoints = true        //? NOTE: Be sure to also accordingly set the publicNetworkAccess setting on the Function App
 param privateEndpointsSubnetName = null
+param privateEndpointsSubnetAddressPrefix = null
 param subnets = [
   //? Copy the commented out block to configure and create subnets as necessary (some settings are opptional)
   //! For use of an App Service Plan, a subnet delegated to "Microsoft.Web/serverfarms" is required
   // {
   //   name: 'snet-{purpose}-${resourceSuffix}' - required
   //   addressPrefix: cidrSubnet(base, size, offset) - required
-  //!   networkSecurityGroupResourceId: !empty(defaultSubnetNsgResourceId) ? defaultSubnetNsgResourceId : null
   //   delegation: ''
   // }
 ]

@@ -22,36 +22,18 @@ param usePrivateEndpoints bool
 @description('Subnets to deploy into this vNet. If using private endpoints, a dedicated subnet is automatically added to this array')
 param subnets array
 
-param nsgConfigs array
+param networkSecurityGroupConfigs array
 
-// Optional: NSG
-@description('Whether to provision Network Security Groups')
+@description('Kill switch: when false, all NSG configs are ignored and no NSGs are deployed')
 param useNetworkSecurityGroups bool
 
 param tags object
 
-//    {
-  //   subnet: 'name of subnet to attach to (from above subnet config)'
-  //   config: {
-  //     name: 'nsg name'
-  //     rules: [
-  //     {
-  //       name: 'security rule name'
-  //       properties: {
-  //         access: 'Allow'      //? 'Allow' | 'Deny'
-  //         direction: 'Inbound' //? 'Inbound' | 'Outbound'
-  //         priority: 100        //? 100 -> 4096
-  //         protocol: 'Tcp'      //? '*' | 'Ah' | 'Esp' | 'Icmp' | 'Tcp' | 'Udp'
-  //       }
-  //     }
-  //   ]
-  //   }
-  // }
+// When the kill switch is off, ignore all NSG configs
+var effectiveNsgConfigs = useNetworkSecurityGroups ? networkSecurityGroupConfigs : []
 
-
-
-// Deploy NSGs from config - an empty nsgConfigs array naturally deploys nothing
-module nsgs 'br/public:avm/res/network/network-security-group:0.5.2' = [for nsgConfig in nsgConfigs: {
+// Deploy NSGs from config — an empty array naturally deploys nothing
+module nsgs 'br/public:avm/res/network/network-security-group:0.5.2' = [for nsgConfig in effectiveNsgConfigs: {
   params: {
     name: nsgConfig.config.name
     securityRules: nsgConfig.config.rules
@@ -73,7 +55,7 @@ var allSubnets = usePrivateEndpoints
 // This avoids ARM's if() both-branch-evaluation issue - the key always exists.
 var allSubnetNsgMap = union(
   toObject(allSubnets, s => s.name, _ => ''),
-  toObject(nsgConfigs, config => config.subnet, config => config.config.name)
+  toObject(effectiveNsgConfigs, config => config.subnet, config => config.config.name)
 )
 
 module newVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {

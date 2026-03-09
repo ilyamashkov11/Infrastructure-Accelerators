@@ -81,6 +81,9 @@ param newVnetSize string?
 @description('Whether to deploy private endpoints for the Function App')
 param usePrivateEndpoints bool
 
+@description('Size of the subnet that will be created for the private endpoints')
+param privateEndpointsSubnetAddressPrefix string?
+
 @description('Name of thew subnet created for private endpoints')
 param privateEndpointsSubnetName string?
 
@@ -105,7 +108,7 @@ param useStorageAccount bool
 //?                                 Application Insights Parameters
 //? ==============================================================================================
 @description('Whether to use a Application Insights with the Function App')
-param useApplicationInsights bool
+param useApplicationInsights bool 
 
 //? ==============================================================================================
 //?                                         Modules
@@ -113,7 +116,15 @@ param useApplicationInsights bool
 module network 'network/main.bicep' = if (useVnetIntegration) {
     name: 'network-main'
     params: {
-        
+        networkSecurityGroupConfigs: networkSecurityGroupConfigs!
+        subnets: subnets!
+        useExistingVnet: useExistingVnet
+        useNetworkSecurityGroups: useNetworkSecurityGroups
+        usePrivateEndpoints: usePrivateEndpoints
+        virtualNetworkName: newVnetName!
+        addressPrefixes: [newVnetSize]
+        privateEndpointsSubnetAddressPrefix: privateEndpointsSubnetAddressPrefix
+        privateEndpointsSubnetName: privateEndpointsSubnetName
     }
 }
 
