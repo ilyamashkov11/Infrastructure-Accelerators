@@ -50,35 +50,45 @@ param tags object
 
 
 
-module nsgs 'br/public:avm/res/network/network-security-group:0.5.2' = [for nsgConfig in nsgConfigs: if (useNetworkSecurityGroups) {
-  name: 'nsg-${nsgConfig.config.name}-AVM-module'
+// Deploy NSGs from config - an empty nsgConfigs array naturally deploys nothing
+module nsgs 'br/public:avm/res/network/network-security-group:0.5.2' = [for nsgConfig in nsgConfigs: {
   params: {
     name: nsgConfig.config.name
     securityRules: nsgConfig.config.rules
   }
 }]
 
-var subnetsWithNsgs = [
-  for (subnet, i) in subnets: union(subnet, { 
-    networkSecurityGroupResourceId: first(filter(nsgConfigs, nsg => nsg.name == subnet.name)) 
-  })
-]
+// Combine subnets + optional private endpoint subnet into one array
+var allSubnets = usePrivateEndpoints
+  ? concat(subnets, [
+      {
+        name: privateEndpointsSubnetName
+        addressPrefix: privateEndpointsSubnetAddressPrefix
+        privateEndpointNetworkPolicies: 'Enabled'
+      }
+    ])
+  : subnets
 
-var privateEndpointSubnet = (usePrivateEndpoints) ? [{
-  name: privateEndpointsSubnetName
-  addressPrefix: privateEndpointsSubnetAddressPrefix
-  privateEndpointNetworkPolicies: 'Enabled'
-  networkSecurityGroupResourceId: (useNetworkSecurityGroups) ? first([]) : null
-}] : []
+// Safe lookup: every subnet gets a default entry (''), then NSG-configured subnets are overwritten with the real NSG name.
+// This avoids ARM's if() both-branch-evaluation issue - the key always exists.
+var allSubnetNsgMap = union(
+  toObject(allSubnets, s => s.name, _ => ''),
+  toObject(nsgConfigs, config => config.subnet, config => config.config.name)
+)
 
 module newVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
   name: 'vnet-AVM-module'
+  dependsOn: [nsgs]
   params: {
     name: virtualNetworkName
     location: location
     tags: tags
     addressPrefixes: addressPrefixes!
-    subnets: (usePrivateEndpoints) ? (useNetworkSecurityGroups) ? concat(subnetsWithNsgs, privateEndpointSubnet) : concat(subnets, privateEndpointSubnet) : subnets
+    subnets: [for (subnet, i) in allSubnets: union(subnet, {
+      networkSecurityGroupResourceId: allSubnetNsgMap[subnet.name] != ''
+        ? resourceId('Microsoft.Network/networkSecurityGroups', allSubnetNsgMap[subnet.name])
+        : null
+    })]
   }
 }
 
