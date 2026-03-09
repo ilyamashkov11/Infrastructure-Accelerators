@@ -15,22 +15,30 @@ var resourceSuffixNoHyphens = (empty(instanceSuffix)) ? '${orgName}${environment
 //?                             App Service Plan Configuration
 //? ==============================================================================================
 param useExistingAppServicePlan = false
+param appServicePlanName = '' //? If using an existing App Service Plan, put its name here
 
 // Only fill if provisioning a new App Service Plan (i.e. useExistingAppServicePlan = false)
-param newAppServicePlanName = null
 param skuName = 'FC1'
 param zoneRedundant = false
-
-// Only fill the following block if using an existing App Service Plan (i.e. useExistingAppServicePlan = true)
-param existingAppServicePlanName = null
 
 
 //? ==============================================================================================
 //?                               Function App Configuration
 //? ==============================================================================================
+param functionAppName = ''
 param useVnetIntegration = false
+param publicNetworkAccess = 'Enabled'
+param useStorageAccount = false
+param useApplicationInsights = false
 param functionAppOsType = 'Linux'
 param forceHttps = true
+param alwaysOn = true
+param e2eEncryptionEnabled = true
+param ftpsState = 'FtpsOnly'
+param linuxFxVersion = 'DOTNET-ISOLATED|8.0'
+param healthCheckPath = ''
+param managedIdentity = true
+param minTlsVersion = '1.2'
 
 param appSettings = {
   minTlsVersion: '1.2'

@@ -16,9 +16,6 @@ param privateEndpointsSubnetName string?
 @description('Address prefix for the private endpoints subnet (e.g. "10.0.2.0/24").')
 param privateEndpointsSubnetAddressPrefix string?
 
-// @description('Address prefix for a default/general-purpose subnet (e.g. "10.0.0.0/24").')
-// param defaultSubnetAddressPrefix string
-
 @description('Whether to depploy private endpoints. AAlso creates a dedicated subnet for the private endpoints')
 param usePrivateEndpoints bool
 
@@ -28,14 +25,6 @@ param subnets array
 // Optional: NSG
 @description('Whether to provision Network Security Groups')
 param useNetworkSecurityGroups bool
-// @description('Resource ID of the NSG to attach to the App Service integration subnet.')
-// param appServiceSubnetNsgResourceId string = ''
-
-// @description('Resource ID of the NSG to attach to the private endpoints subnet.')
-// param privateEndpointsSubnetNsgResourceId string = ''
-
-// @description('Resource ID of the NSG to attach to the default subnet.')
-// param defaultSubnetNsgResourceId string = ''
 
 param tags object
 
@@ -54,7 +43,7 @@ var privateEndpointSubnet = (usePrivateEndpoints) ? [{
   networkSecurityGroupResourceId: (useNetworkSecurityGroups) ? nsgs!.outputs.resourceId : null
 }] : []
 
-module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
+module newVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
   name: 'vnet-AVM-module'
   params: {
     name: virtualNetworkName
@@ -66,13 +55,13 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
 }
 
 @description('The resource ID of the virtual network.')
-output virtualNetworkResourceId string = virtualNetwork.outputs.resourceId
+output virtualNetworkResourceId string = newVirtualNetwork.outputs.resourceId
 
 @description('The name of the virtual network.')
-output virtualNetworkName string = virtualNetwork.outputs.name
+output virtualNetworkName string = newVirtualNetwork.outputs.name
 
 @description('The resource IDs of all deployed subnets.')
-output subnetResourceIds array = virtualNetwork.outputs.subnetResourceIds
+output subnetResourceIds array = newVirtualNetwork.outputs.subnetResourceIds
 
 @description('The names of all deployed subnets.')
-output subnetNames array = virtualNetwork.outputs.subnetNames
+output subnetNames array = newVirtualNetwork.outputs.subnetNames
