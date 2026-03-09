@@ -65,7 +65,7 @@ param subnets = [
   // {
   //   name: 'snet-{purpose}-${resourceSuffix}' - required
   //   addressPrefix: cidrSubnet(base, size, offset) - required
-  //   networkSecurityGroupResourceId: !empty(defaultSubnetNsgResourceId) ? defaultSubnetNsgResourceId : null
+  //!   networkSecurityGroupResourceId: !empty(defaultSubnetNsgResourceId) ? defaultSubnetNsgResourceId : null
   //   delegation: ''
   // }
 ]
@@ -75,12 +75,23 @@ param useNetworkSecurityGroups = false
 // Only fill the below if using using NSGs (i.e. useNetworkSecurityGroups = true)
 param networkSecurityGroupConfigs = [
   //? Copy the commented out block to configure and create subnets as necessary (some settings are opptional)
-  {
-    subnet: ''
-    networkSecurityGroup: {
-      name: ''
-    }
-  }
+  // {
+  //   subnet: 'name of subnet to attach to (from above subnet config)'
+  //   config: {
+  //     name: 'nsg name'
+  //     rules: [
+  //     {
+  //       name: 'security rule name'
+  //       properties: {
+  //         access: 'Allow'      //? 'Allow' | 'Deny'
+  //         direction: 'Inbound' //? 'Inbound' | 'Outbound'
+  //         priority: 100        //? 100 -> 4096
+  //         protocol: 'Tcp'      //? '*' | 'Ah' | 'Esp' | 'Icmp' | 'Tcp' | 'Udp'
+  //       }
+  //     }
+  //   ]
+  //   }
+  // }
 ]
 
 // Only fill the below if NOT using using NSGs (i.e. useNetworkSecurityGroups = false) 

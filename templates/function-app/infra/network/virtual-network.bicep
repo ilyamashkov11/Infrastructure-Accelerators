@@ -22,25 +22,53 @@ param usePrivateEndpoints bool
 @description('Subnets to deploy into this vNet. If using private endpoints, a dedicated subnet is automatically added to this array')
 param subnets array
 
+param nsgConfigs array
+
 // Optional: NSG
 @description('Whether to provision Network Security Groups')
 param useNetworkSecurityGroups bool
 
 param tags object
 
-module nsgs 'br/public:avm/res/network/network-security-group:0.5.2' = if (useNetworkSecurityGroups && usePrivateEndpoints) {
-  name: 'nsg-AVM-module'
+//    {
+  //   subnet: 'name of subnet to attach to (from above subnet config)'
+  //   config: {
+  //     name: 'nsg name'
+  //     rules: [
+  //     {
+  //       name: 'security rule name'
+  //       properties: {
+  //         access: 'Allow'      //? 'Allow' | 'Deny'
+  //         direction: 'Inbound' //? 'Inbound' | 'Outbound'
+  //         priority: 100        //? 100 -> 4096
+  //         protocol: 'Tcp'      //? '*' | 'Ah' | 'Esp' | 'Icmp' | 'Tcp' | 'Udp'
+  //       }
+  //     }
+  //   ]
+  //   }
+  // }
+
+
+
+module nsgs 'br/public:avm/res/network/network-security-group:0.5.2' = [for nsgConfig in nsgConfigs: if (useNetworkSecurityGroups) {
+  name: 'nsg-${nsgConfig.config.name}-AVM-module'
   params: {
-    name: ''
-    securityRules: []
+    name: nsgConfig.config.name
+    securityRules: nsgConfig.config.rules
   }
-}
+}]
+
+var subnetsWithNsgs = [
+  for (subnet, i) in subnets: union(subnet, { 
+    networkSecurityGroupResourceId: first(filter(nsgConfigs, nsg => nsg.name == subnet.name)) 
+  })
+]
 
 var privateEndpointSubnet = (usePrivateEndpoints) ? [{
   name: privateEndpointsSubnetName
   addressPrefix: privateEndpointsSubnetAddressPrefix
   privateEndpointNetworkPolicies: 'Enabled'
-  networkSecurityGroupResourceId: (useNetworkSecurityGroups) ? nsgs!.outputs.resourceId : null
+  networkSecurityGroupResourceId: (useNetworkSecurityGroups) ? first([]) : null
 }] : []
 
 module newVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
@@ -50,7 +78,7 @@ module newVirtualNetwork 'br/public:avm/res/network/virtual-network:0.7.0' = {
     location: location
     tags: tags
     addressPrefixes: addressPrefixes!
-    subnets: (usePrivateEndpoints) ? concat(subnets, privateEndpointSubnet) : subnets
+    subnets: (usePrivateEndpoints) ? (useNetworkSecurityGroups) ? concat(subnetsWithNsgs, privateEndpointSubnet) : concat(subnets, privateEndpointSubnet) : subnets
   }
 }
 

@@ -145,7 +145,6 @@ module functionApps 'function-apps/main.bicep' = {
         appSettings: appSettings
         applicationInsightsResourceId: (useApplicationInsights) ? applicationInsights!.outputs.applicationInsightsResourceId : null
         e2eEncryptionEnabled: e2eEncryptionEnabled
-        forceHttps: forceHttps
         ftpsState: ftpsState
         functionAppName: functionAppName
         healthCheckPath: healthCheckPath
@@ -153,8 +152,9 @@ module functionApps 'function-apps/main.bicep' = {
         managedIdentity: managedIdentity
         minTlsVersion: minTlsVersion
         operatingSystem: functionAppOsType
-        // network params
         storageAccountResourceId: (useStorageAccount) ? storageAccount!.outputs.storageAccountResourceId : null
+        // network params
+        forceHttps: forceHttps
         publicNetworkAccess: publicNetworkAccess
         virtualNetworkSubnetResourceId: (useVnetIntegration) ? network!.outputs.virtualNetworkResourceId : null
     }

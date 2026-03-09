@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="InfrastructureAccelerator.csproj" />
+  <Project Path="templates/function-app/src/MyFunctionApp/MyFunctionApp.csproj" Id="53f516db-dfa7-457c-abb7-e3995b8c215f" />
+</Solution>
